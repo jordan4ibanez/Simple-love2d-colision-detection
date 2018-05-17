@@ -12,6 +12,8 @@ fixed decides if the object will have gravity applied
 
 ix and iy are the inertial values (horizontal/vertical)
 
+lx and ly are the last position
+
 ]]--
 
 --do inertial cancelation (slowdown)
@@ -21,10 +23,12 @@ local gravity = 9.28
 
 local g_func = {} --custom game function table
 
+g_func.min_size = 10
+
 --this holds all collision objects
 local object_table = {
-{x=10,y=0,sx=50,sy=50,fixed=false,ix=0,iy=0}, --x,y quards | sx,sy width and height | fixed is if it moves (true is don't) | iy ix is inertia
-{x=50,y=400,sx=500,sy=50,fixed=true,ix=0,iy=0}, 
+{x=10,y=0,sx=50,sy=50,fixed=false,ix=0,iy=0,lx=0,ly=0}, --x,y quards | sx,sy width and height | fixed is if it moves (true is don't) | iy ix is inertia | lx and ly are last pos
+{x=50,y=400,sx=500,sy=50,fixed=true,ix=0,iy=0,lx=0,ly=0}, 
 }
 
 function love.draw()
@@ -124,9 +128,30 @@ function g_func.collision(item)
 				if y_less or y_more then
 					print("Y IS dominate")
 					print("Y IS dominate")
+				else
+					print("X IS MORE DOMINATE")
 				end
 				
 				
+				
+				--[[
+				--ALPHA TEST 2 (closer, but corner problems)
+				if y_less or y_more then
+					if comparey < 0 then
+						ti.y = ti.y - (comparey+ti.sy) --new pos is posy - (y point distance + object height)
+					elseif comparey > 0 then
+						ti.y = ti.y + (ti.sy-comparey) --new pos is posy + (object height - y point distance)
+					end
+				else
+					if comparex < 0 then
+						ti.x = ti.x - (comparex+ti.sx) --new pos is posy - (y point distance + object height)
+						--love.quit()
+					elseif comparex > 0 then
+						ti.x = ti.x + (it.sx-comparex) --new pos is posy + (object height - y point distance)
+						--love.quit()
+					end
+				end
+				]]-- 
 					
 				--[[
 				--ALPHA TEST OF COLLISION CORRECTION
