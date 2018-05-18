@@ -28,7 +28,7 @@ g_func.min_size = 10
 --this holds all collision objects
 local object_table = {
 {x=10,y=0,sx=50,sy=50,fixed=false,ix=0,iy=0,lx=0,ly=0}, --x,y quards | sx,sy width and height | fixed is if it moves (true is don't) | iy ix is inertia | lx and ly are last pos
-{x=50,y=400,sx=500,sy=50,fixed=true,ix=0,iy=0,lx=0,ly=0}, 
+{x=100,y=400,sx=500,sy=50,fixed=true,ix=0,iy=0,lx=0,ly=0}, 
 }
 
 function love.draw()
@@ -94,34 +94,90 @@ end
 --simple collision detection with other objects
 function g_func.collision(item)
 	local ti = object_table[item]
-	local item_center = {ti.x+(ti.sx/2),ti.y+(ti.sy/2)} --get center of main object
+	--points storage
+	local ti_table = {}
+	ti_table.top    = ti.y
+	ti_table.bottom = ti.y+ti.sy
+	ti_table.left   = ti.x
+	ti_table.right  = ti.x+ti.sx
+	local forcedx = nil
+	--local item_center = {ti.x+(ti.sx/2),ti.y+(ti.sy/2)} --get center of main object
 	for index = 1,table.getn(object_table) do
 		--do not collide with self
 		if index ~= item then
 			local it = object_table[index]
+			local it_table = {}
 				
-			local index_center = {it.x+(it.sx/2),it.y+(it.sy/2)} --get center of indexed object
+			--local index_center = {it.x+(it.sx/2),it.y+(it.sy/2)} --get center of indexed object
 		
 			--detect collision
 			if (ti.x < it.x + it.sx  and
 			    ti.x + ti.sx > it.x  and
 			    ti.y < it.y + it.sy  and
 			    ti.sy + ti.y > it.y) then
-			  				
-				--check the distances
-				local comparey = ti.y-it.y
-				local comparex = ti.x-it.x
+			  	
+			  	
+			  	it_table.top = it.y
+				it_table.bottom = it.y+it.sy
+				it_table.left = it.x
+				it_table.right = it.x+it.sx
 				
-				--print("collision detected! Distance x = "..comparex.." Distance y = "..comparey)
+				--top == right bottom == left
 				
-				print(item_center[1],item_center[2])
+				if ti.lx > it_table.right or ti.lx + ti.sx < it_table.left then
+					if it_table.right < ti_table.left or it_table.left > ti_table.right then
+						if math.abs(it_table.right - ti_table.left) > math.abs(it_table.left - ti_table.right) then
+							print("test")
+							ti.x = it_table.left
+							forcedx = ti.lx
+							end
+						if math.abs(it_table.right - ti_table.left) < math.abs(it_table.left - ti_table.right) then
+							print("test")
+							ti.x = it_table.right-ti.sx
+							forcedx = ti.lx
+						end
+					end
+				else
+					if it_table.top < ti_table.bottom or it_table.bottom > ti_table.top then
+						if math.abs(it_table.top - ti_table.bottom) > math.abs(it_table.bottom - ti_table.top) then
+							ti.y = it_table.bottom
+							end
+						if math.abs(it_table.top - ti_table.bottom) < math.abs(it_table.bottom - ti_table.top) then
+							ti.y = it_table.top-ti.sy
+						end
+					end
+				end
 				
+				
+				
+				
+				--old points
+				--[[
+					if old points are above axis then do
+					
+				]]--
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+								
+				
+				
+				
+				--[[
+				--ALPHA TEST 2 (closer, but corner problems)
 				--find values
-				local x_less = item_center[1] < it.x
-				local x_more = item_center[1] > it.x + it.sx
+				--local x_less = item_center[1] < it.x
+				--local x_more = item_center[1] > it.x + it.sx
 				
-				local y_less = item_center[2] < it.y
-				local y_more = item_center[2] > it.y + it.sy
+				--local y_less = item_center[2] < it.y
+				--local y_more = item_center[2] > it.y + it.sy
 				
 				
 				--prefer y to x collision correction
@@ -132,10 +188,6 @@ function g_func.collision(item)
 					print("X IS MORE DOMINATE")
 				end
 				
-				
-				
-				--[[
-				--ALPHA TEST 2 (closer, but corner problems)
 				if y_less or y_more then
 					if comparey < 0 then
 						ti.y = ti.y - (comparey+ti.sy) --new pos is posy - (y point distance + object height)
@@ -174,5 +226,14 @@ function g_func.collision(item)
 				]]--
 			end
 		end
+	end
+	ti.lx = ti.x
+	ti.ly = ti.y
+	--print(forcedx)
+	if forcedx then
+		print("Forcedx")
+		ti.lx = ti.forcedx
+	else
+		--print("forcedx is not a number")
 	end
 end
